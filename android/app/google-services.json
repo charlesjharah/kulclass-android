@@ -1,0 +1,70 @@
+{
+  "project_info": {
+    "project_number": "1016864985057",
+    "project_id": "aura-live-15d96",
+    "storage_bucket": "aura-live-15d96.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:1016864985057:android:6e85fa6d97b00225c38ca0",
+        "android_client_info": {
+          "package_name": "com.auraapp.live"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "1016864985057-cio9kdp6r06ps6ehg2oa17sc0nk4i24n.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.auraapp.live",
+            "certificate_hash": "e3f47a5ba27b333dca318aea94f58672d455e78f"
+          }
+        },
+        {
+          "client_id": "1016864985057-esdvq8megu25hvp0qqn52m1um8vi1pre.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.auraapp.live",
+            "certificate_hash": "446b915fcea837cafa5df9e5eba6e1059b73a2f0"
+          }
+        },
+        {
+          "client_id": "1016864985057-g0ql4khbq195if5t1kcotdefgkqam036.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.auraapp.live",
+            "certificate_hash": "91fc9c052ed94a3dec5100bfde4d84e68a09eed2"
+          }
+        },
+        {
+          "client_id": "1016864985057-c86fipmulnr1enhleaqq1ali3mgvmj6a.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDOko7VtNp2XBiNJ6GhaKrHIV8t_hU7SmY"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "1016864985057-c86fipmulnr1enhleaqq1ali3mgvmj6a.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "1016864985057-dqrr4j0qa11bnk2enrov2fdg3a9ne5u6.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.auraapp.live"
+              }
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
