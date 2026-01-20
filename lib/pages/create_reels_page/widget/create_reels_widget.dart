@@ -13,6 +13,7 @@ import 'package:auralive/pages/create_reels_page/controller/create_reels_control
 import 'package:auralive/utils/api.dart';
 import 'package:auralive/utils/asset.dart';
 import 'package:auralive/utils/color.dart';
+import 'package:auralive/size_extension.dart';
 import 'package:auralive/utils/database.dart';
 import 'package:auralive/utils/enums.dart';
 import 'package:auralive/utils/font_style.dart';
