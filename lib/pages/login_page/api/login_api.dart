@@ -66,6 +66,17 @@ class LoginApi {
             Utils.showLog("No email present in login response.");
           }
 
+          // --- STORE COIN if present ---
+          final storage = GetStorage();
+          final respCoin = loginModel.user?.coin;
+          if (respCoin != null && respCoin.isNotEmpty) {
+            storage.write('user_coin', respCoin);
+            Utils.showLog("Stored Coin => $respCoin");
+          } else {
+            Utils.showLog("No coin present in login response.");
+          }
+
+
 
 
           final respCountry = loginModel.user?.country;

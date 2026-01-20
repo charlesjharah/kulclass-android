@@ -47,24 +47,25 @@ class ProfileView extends GetView<ProfileController> {
           // -----------------------------------------------------
           // NEW: ADDED CART ICON HERE
           // -----------------------------------------------------
-          actions: [
-            GestureDetector(
-              onTap: () => _onClickShop(context),
-              child: Container(
-                margin: const EdgeInsets.only(right: 15),
-                padding: const EdgeInsets.all(8),
-                decoration: BoxDecoration(
-                  shape: BoxShape.circle,
-                  color: AppColor.primary.withOpacity(0.1), // Optional background
-                ),
-                child: const Icon(
-                  Icons.shopping_cart,
-                  color: AppColor.black, // Or AppColor.primary
-                  size: 24,
-                ),
+          
+          // -----------------------------------------------------
+          // ✅ MOVED CART ICON TO TOP LEFT (LEADING)
+          // -----------------------------------------------------
+          leading: GestureDetector(
+            onTap: () => _onClickShop(context),
+            child: Container(
+              margin: const EdgeInsets.all(8), // Adjusted margin for left side
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                color: AppColor.primary.withOpacity(0.1),
+              ),
+              child: const Icon(
+                Icons.shopping_cart,
+                color: AppColor.black,
+                size: 20, // Slightly smaller to fit nicely in leading slot
               ),
             ),
-          ],
+          ),
           // -----------------------------------------------------
         ),
         body: RefreshIndicator(
