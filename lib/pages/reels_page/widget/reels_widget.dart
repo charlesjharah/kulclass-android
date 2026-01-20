@@ -277,16 +277,21 @@ class _PreviewReelsViewState extends State<PreviewReelsView> with SingleTickerPr
     isReelsPage.value = false;
     onStopVideo();
 
+    // 1. Get Logged-in User's Email
     final storage = GetStorage();
     final userEmail = storage.read('user_email') ?? '';
-    // Getting the email from the updated Model
-    final shopEmail = controller.mainReels[widget.index].userEmail ?? ''; 
-
-    // Constructing the URL as requested
-    final webUrl = "https://kulclass.com/shop/buy.php?userEmail=$userEmail&shopEmail=$shopEmail";
     
-    Utils.showLog("Opening Cart URL: $webUrl");
+    // 2. Get Reel Poster's Details (User ID and Name)
+    final shopUserId = controller.mainReels[widget.index].userId ?? '';
+    final shopName = controller.mainReels[widget.index].name ?? ''; // Or use .userName for the handle
 
+    // 3. Construct URL
+    // Sending both ID and Name so the web page can use whichever it needs
+    final webUrl = "https://admin.auraapp.site/test.php?userEmail=$userEmail&shopUserId=$shopUserId&shopName=$shopName";
+    
+    Utils.showLog("Opening Shop URL: $webUrl");
+
+    // 4. Open WebView
     _showFullScreenWebView(context, webUrl);
   }
 
