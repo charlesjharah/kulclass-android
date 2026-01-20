@@ -1,6 +1,11 @@
 import 'dart:async';
 import 'dart:developer';
 
+import 'dart:io'; // For Platform check
+import 'package:flutter/foundation.dart'; // For kIsWeb
+import 'package:webview_flutter/webview_flutter.dart';
+import 'package:url_launcher/url_launcher.dart';
+
 import 'package:blurrycontainer/blurrycontainer.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
@@ -39,6 +44,28 @@ class ProfileView extends GetView<ProfileController> {
           shadowColor: AppColor.black.withOpacity(0.4),
           surfaceTintColor: AppColor.transparent,
           flexibleSpace: const Center(child: ProfileAppBarUi()),
+          // -----------------------------------------------------
+          // NEW: ADDED CART ICON HERE
+          // -----------------------------------------------------
+          actions: [
+            GestureDetector(
+              onTap: () => _onClickShop(context),
+              child: Container(
+                margin: const EdgeInsets.only(right: 15),
+                padding: const EdgeInsets.all(8),
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  color: AppColor.primary.withOpacity(0.1), // Optional background
+                ),
+                child: const Icon(
+                  Icons.shopping_cart,
+                  color: AppColor.black, // Or AppColor.primary
+                  size: 24,
+                ),
+              ),
+            ),
+          ],
+          // -----------------------------------------------------
         ),
         body: RefreshIndicator(
           notificationPredicate: (notification) {
@@ -341,13 +368,12 @@ class ProfileView extends GetView<ProfileController> {
                                                       Row(
                                                         children: [
                                                           Obx(
-                                                                () => Text(
-                                                                  controller.coinOwnerCurrency.value == 0.0
-                                                                      ? 'USD ${CustomFormatNumber.convert(CustomFetchUserCoin.coin.value)}'
-                                                                      : "${controller.ownerCurrencyCode.value} ${CustomFormatNumber.convert(controller.coinOwnerCurrency.value.toInt())}",
-                                                                  style: AppFontStyle.styleW700(AppColor.white, 35),
-                                                                ),
-
+                                                            () => Text(
+                                                              controller.coinOwnerCurrency.value == 0.0
+                                                                  ? 'USD ${CustomFormatNumber.convert(CustomFetchUserCoin.coin.value)}'
+                                                                  : "${controller.ownerCurrencyCode.value} ${CustomFormatNumber.convert(controller.coinOwnerCurrency.value.toInt())}",
+                                                              style: AppFontStyle.styleW700(AppColor.white, 35),
+                                                            ),
                                                           ),
                                                           15.width,
                                                           GestureDetector(
@@ -384,8 +410,6 @@ class ProfileView extends GetView<ProfileController> {
                                                       ),
                                                     ],
                                                   ),
-
-
                                                 ],
                                               ),
                                             ),
@@ -459,6 +483,78 @@ class ProfileView extends GetView<ProfileController> {
         ),
       ),
     );
+  }
+
+  // --------------------------------------------------------
+  // NEW HELPER METHODS FOR SHOP CART
+  // --------------------------------------------------------
+
+  void _onClickShop(BuildContext context) {
+    // 1. Get the Logged-in User ID
+    final userId = Database.loginUserId;
+    
+    // 2. Construct the URL
+    final url = "https://kulclass.com/shop/index.php?userId=$userId";
+    
+    // 3. Open WebView
+    _showFullScreenWebView(context, url);
+  }
+
+  void _showFullScreenWebView(BuildContext context, String url) {
+    if (kIsWeb || !(Platform.isAndroid || Platform.isIOS)) {
+      _openUrlInBrowser(url);
+      return;
+    }
+
+    Navigator.of(context).push(
+      MaterialPageRoute(
+        fullscreenDialog: true,
+        builder: (_) {
+          bool isLoading = true;
+          final webController = WebViewController()
+            ..setJavaScriptMode(JavaScriptMode.unrestricted)
+            ..setNavigationDelegate(
+              NavigationDelegate(
+                onPageFinished: (_) {
+                  isLoading = false;
+                },
+              ),
+            )
+            ..loadRequest(Uri.parse(url));
+
+          return StatefulBuilder(
+            builder: (context, setState) {
+              return Scaffold(
+                appBar: AppBar(
+                  backgroundColor: Colors.white,
+                  title: const Text("My Shop", style: TextStyle(color: Colors.black)),
+                  leading: IconButton(
+                    icon: const Icon(Icons.close, color: Colors.black),
+                    onPressed: () => Navigator.pop(context),
+                  ),
+                ),
+                body: Stack(
+                  children: [
+                    WebViewWidget(controller: webController),
+                    if (isLoading)
+                      const Center(child: CircularProgressIndicator()),
+                  ],
+                ),
+              );
+            },
+          );
+        },
+      ),
+    );
+  }
+
+  void _openUrlInBrowser(String url) async {
+    final uri = Uri.parse(url);
+    if (await canLaunchUrl(uri)) {
+      await launchUrl(uri, mode: LaunchMode.externalApplication);
+    } else {
+      Get.snackbar("Error", "Could not open the URL");
+    }
   }
 }
 
