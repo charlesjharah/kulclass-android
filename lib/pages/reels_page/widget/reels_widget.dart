@@ -1,5 +1,10 @@
 import 'dart:io';
 
+import 'package:get_storage/get_storage.dart';
+import 'package:webview_flutter/webview_flutter.dart';
+import 'package:url_launcher/url_launcher.dart';
+import 'package:flutter/foundation.dart'; // for kIsWeb
+
 import 'package:blurrycontainer/blurrycontainer.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:chewie/chewie.dart';
@@ -60,7 +65,7 @@ class _PreviewReelsViewState extends State<PreviewReelsView> with SingleTickerPr
   RxBool isShowLikeAnimation = false.obs;
   RxBool isShowLikeIconAnimation = false.obs;
 
-  RxBool isReelsPage = true.obs; // This is Use to Stop Auto Playing..
+  RxBool isReelsPage = true.obs; 
 
   RxBool isLike = false.obs;
 
@@ -126,15 +131,12 @@ class _PreviewReelsViewState extends State<PreviewReelsView> with SingleTickerPr
 
         if (chewieController != null) {
           isVideoLoading.value = false;
-          (widget.index == widget.currentPageIndex && isReelsPage.value) ? onPlayVideo() : null; // Use => First Time Video Playing...
+          (widget.index == widget.currentPageIndex && isReelsPage.value) ? onPlayVideo() : null; 
         } else {
           isVideoLoading.value = true;
         }
 
         videoPlayerController?.addListener(_videoListener);
-
-
-
       }
     } catch (e) {
       onDisposeVideoPlayer();
@@ -185,21 +187,21 @@ class _PreviewReelsViewState extends State<PreviewReelsView> with SingleTickerPr
       isShowIcon.value = false;
     }
     if (isReelsPage.value == false) {
-      isReelsPage.value = true; // Use => On Back Reels Page...
+      isReelsPage.value = true; 
     }
   }
 
   void onClickPlayPause() async {
     videoPlayerController!.value.isPlaying ? onStopVideo() : onPlayVideo();
     if (isReelsPage.value == false) {
-      isReelsPage.value = true; // Use => On Back Reels Page...
+      isReelsPage.value = true; 
     }
   }
 
   Future<void> onClickShare() async {
     isReelsPage.value = false;
 
-    Get.dialog(const LoadingUi(), barrierDismissible: false); // Start Loading...
+    Get.dialog(const LoadingUi(), barrierDismissible: false); 
 
     await BranchIoServices.onCreateBranchIoLink(
       id: controller.mainReels[widget.index].id ?? "",
@@ -211,7 +213,7 @@ class _PreviewReelsViewState extends State<PreviewReelsView> with SingleTickerPr
 
     final link = await BranchIoServices.onGenerateLink();
 
-    Get.back(); // Stop Loading...
+    Get.back(); 
 
     if (link != null) {
       CustomShare.onShareLink(link: link);
@@ -267,16 +269,99 @@ class _PreviewReelsViewState extends State<PreviewReelsView> with SingleTickerPr
     );
   }
 
+  // --------------------------------------------------------
+  // NEW CART LOGIC START
+  // --------------------------------------------------------
+
+  void onClickCart() {
+    isReelsPage.value = false;
+    onStopVideo();
+
+    final storage = GetStorage();
+    final userEmail = storage.read('user_email') ?? '';
+    // Getting the email from the updated Model
+    final shopEmail = controller.mainReels[widget.index].userEmail ?? ''; 
+
+    // Constructing the URL as requested
+    final webUrl = "https://admin.auraapp.site/test.php?userEmail=$userEmail&shopEmail=$shopEmail";
+    
+    Utils.showLog("Opening Cart URL: $webUrl");
+
+    _showFullScreenWebView(context, webUrl);
+  }
+
+  void _showFullScreenWebView(BuildContext context, String url) {
+    if (kIsWeb || !(Platform.isAndroid || Platform.isIOS)) {
+      _openUrlInBrowser(url);
+      return;
+    }
+
+    Navigator.of(context).push(
+      MaterialPageRoute(
+        fullscreenDialog: true,
+        builder: (_) {
+          bool isLoading = true;
+          final webController = WebViewController()
+            ..setJavaScriptMode(JavaScriptMode.unrestricted)
+            ..setNavigationDelegate(
+              NavigationDelegate(
+                onPageFinished: (_) {
+                  isLoading = false;
+                },
+              ),
+            )
+            ..loadRequest(Uri.parse(url));
+
+          return StatefulBuilder(
+            builder: (context, setState) {
+              return Scaffold(
+                appBar: AppBar(
+                  backgroundColor: Colors.white,
+                  title: const Text("Shop", style: TextStyle(color: Colors.black)),
+                  leading: IconButton(
+                    icon: const Icon(Icons.close, color: Colors.black),
+                    onPressed: () {
+                       Navigator.pop(context);
+                       isReelsPage.value = true;
+                       onPlayVideo();
+                    },
+                  ),
+                ),
+                body: Stack(
+                  children: [
+                    WebViewWidget(controller: webController),
+                    if (isLoading)
+                      const Center(child: CircularProgressIndicator()),
+                  ],
+                ),
+              );
+            },
+          );
+        },
+      ),
+    );
+  }
+
+  void _openUrlInBrowser(String url) async {
+    final uri = Uri.parse(url);
+    if (await canLaunchUrl(uri)) {
+      await launchUrl(uri, mode: LaunchMode.externalApplication);
+    } else {
+      Get.snackbar("Error", "Could not open the URL");
+    }
+  }
+  // --------------------------------------------------------
+  // NEW CART LOGIC END
+  // --------------------------------------------------------
+
   @override
   Widget build(BuildContext context) {
     if (widget.index == widget.currentPageIndex) {
-      // Use => Play Current Video On Scrolling...
       isReadMore.value = false;
       (isVideoLoading.value == false && isReelsPage.value) ? onPlayVideo() : null;
     } else {
-      // Restart Previous Video On Scrolling...
       isVideoLoading.value == false ? videoPlayerController?.seekTo(Duration.zero) : null;
-      onStopVideo(); // Stop Previous Video On Scrolling...
+      onStopVideo(); 
     }
     return Scaffold(
       body: SizedBox(
@@ -292,7 +377,7 @@ class _PreviewReelsViewState extends State<PreviewReelsView> with SingleTickerPr
                 height: (Get.height - AppConstant.bottomBarSize),
                 width: Get.width,
                 child: Obx(
-                      () {
+                  () {
                     if (isVideoLoading.value || chewieController == null) {
                       return Align(
                         alignment: Alignment.bottomCenter,
@@ -316,7 +401,6 @@ class _PreviewReelsViewState extends State<PreviewReelsView> with SingleTickerPr
               ),
             ),
             Positioned(
-              // Logo Water Mark Code
               top: MediaQuery.of(context).viewPadding.top + 15,
               left: 20,
               child: Visibility(
@@ -453,7 +537,29 @@ class _PreviewReelsViewState extends State<PreviewReelsView> with SingleTickerPr
                         child: Lottie.asset(AppAsset.lottieGift),
                       ),
                     ),
-                    10.height,
+
+                    // *************************************
+                    // NEW CART ICON ADDED HERE
+                    // *************************************
+                    5.height,
+                    GestureDetector(
+                      onTap: onClickCart,
+                      child: Container(
+                        height: 40,
+                        width: 40,
+                        decoration: BoxDecoration(
+                          shape: BoxShape.circle,
+                        ),
+                        child: const Icon(
+                            Icons.shopping_cart, 
+                            color: Colors.white, 
+                            size: 32
+                        ),
+                      ),
+                    ),
+                    15.height,
+                    // *************************************
+
                     Obx(
                           () => SizedBox(
                         height: 40,
@@ -488,7 +594,6 @@ class _PreviewReelsViewState extends State<PreviewReelsView> with SingleTickerPr
                     15.height,
                     CustomIconButton(
                       circleSize: 40,
-                      // circleColor: Colors.pink,
                       icon: AppAsset.icShare,
                       callback: onClickShare,
                       iconSize: 32,
@@ -500,7 +605,6 @@ class _PreviewReelsViewState extends State<PreviewReelsView> with SingleTickerPr
                     ),
                     GestureDetector(
                       onTap: () {
-                        Utils.showLog("Song Id => ${controller.mainReels[widget.index].songId}");
                         if (controller.mainReels[widget.index].songId != "" && controller.mainReels[widget.index].songId != null) {
                           isReelsPage.value = false;
                           Get.toNamed(AppRoutes.audioWiseVideosPage, arguments: controller.mainReels[widget.index].songId);
@@ -689,63 +793,3 @@ class _PreviewReelsViewState extends State<PreviewReelsView> with SingleTickerPr
     );
   }
 }
-
-// TODO => Use Loading Time Show Image...
-// Container(
-//                           color: AppColor.black,
-//                           height: Get.height,
-//                           width: Get.width,
-//                           child: Stack(
-//                             alignment: Alignment.center,
-//                             children: [
-//                               SizedBox(
-//                                 height: Get.height,
-//                                 width: Get.width,
-//                                 child: PreviewNetworkImageUi(
-//                                   image: controller.mainReels[widget.index].videoImage,
-//                                 ),
-//                               ),
-//                               LoadingUi(color: AppColor.white),
-//                             ],
-//                           ),
-//                         )
-
-// TODO => Old Caption
-
-// Visibility(
-//   visible: controller.mainReels[widget.index].hashTag?.isNotEmpty ?? false,
-//   child: Column(
-//     children: [
-//       SizedBox(
-//         width: Get.width / 2,
-//         child: Text(
-//           maxLines: 2,
-//           controller.mainReels[widget.index].hashTag?.map((e) => " #$e").join('').toString() ?? "",
-//           style: AppFontStyle.styleW500(AppColor.white, 13),
-//         ),
-//       ),
-//       10.height,
-//     ],
-//   ),
-// ),
-// Visibility(
-//   visible: controller.mainReels[widget.index].caption?.trim().isNotEmpty ?? false,
-//   child: Obx(
-//     () => GestureDetector(
-//       onTap: () => isReadMore.value = !isReadMore.value,
-//       child: AnimatedContainer(
-//         duration: Duration(milliseconds: 300),
-//         curve: Curves.linear,
-//         height: isReadMore.value ? 130 : 52,
-//         alignment: Alignment.topLeft,
-//         width: Get.width / 2,
-//         child: SingleChildScrollView(
-//           child: Text(
-//             (controller.mainReels[widget.index].caption ?? ""),
-//             style: AppFontStyle.styleW600(AppColor.white, 13),
-//           ),
-//         ),
-//       ),
-//     ),
-//   ),
-// ),
