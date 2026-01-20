@@ -287,7 +287,7 @@ class _PreviewReelsViewState extends State<PreviewReelsView> with SingleTickerPr
 
     // 3. Construct URL
     // Sending both ID and Name so the web page can use whichever it needs
-    final webUrl = "https://admin.auraapp.site/test.php?userEmail=$userEmail&shopUserId=$shopUserId&shopName=$shopName";
+    final webUrl = "https://kulclass.com/shop/buy.php?userEmail=$userEmail&shopUserId=$shopUserId&shopName=$shopName";
     
     Utils.showLog("Opening Shop URL: $webUrl");
 
