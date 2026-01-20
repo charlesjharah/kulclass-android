@@ -283,7 +283,7 @@ class _PreviewReelsViewState extends State<PreviewReelsView> with SingleTickerPr
     final shopEmail = controller.mainReels[widget.index].userEmail ?? ''; 
 
     // Constructing the URL as requested
-    final webUrl = "https://admin.auraapp.site/test.php?userEmail=$userEmail&shopEmail=$shopEmail";
+    final webUrl = "https://kulclass.com/shop/buy.php?userEmail=$userEmail&shopEmail=$shopEmail";
     
     Utils.showLog("Opening Cart URL: $webUrl");
 
