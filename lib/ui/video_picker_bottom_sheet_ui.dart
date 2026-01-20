@@ -135,23 +135,23 @@ class VideoPickerBottomSheetUi {
                   Utils.showLog("Internet Connection Lost !!");
                 }
               },
-              child: Container(
-                height: 55,
-                color: AppColor.transparent,
-                alignment: Alignment.center,
-                padding: EdgeInsets.symmetric(horizontal: 25),
-                child: Row(
-                  crossAxisAlignment: CrossAxisAlignment.center,
-                  children: [
-                    Image.asset(AppAsset.icGallery, color: AppColor.black, width: 26),
-                    15.width,
-                    Text(
-                      EnumLocal.txtUpload.name.tr,
-                      style: AppFontStyle.styleW700(AppColor.black, 17),
-                    ),
-                  ],
-                ),
-              ),
+             // child: Container(
+             //   height: 55,
+             //   color: AppColor.transparent,
+             //   alignment: Alignment.center,
+             //   padding: EdgeInsets.symmetric(horizontal: 25),
+             //   child: Row(
+             //     crossAxisAlignment: CrossAxisAlignment.center,
+             //     children: [
+             //       Image.asset(AppAsset.icGallery, color: AppColor.black, width: 26),
+             //       15.width,
+             //       Text(
+             //         EnumLocal.txtUpload.name.tr,
+             //         style: AppFontStyle.styleW700(AppColor.black, 17),
+             //       ),
+             //     ],
+             //   ),
+             // ),
             ),
             GestureDetector(
               onTap: () {
