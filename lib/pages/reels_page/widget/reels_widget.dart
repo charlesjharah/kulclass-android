@@ -528,24 +528,24 @@ class _PreviewReelsViewState extends State<PreviewReelsView> with SingleTickerPr
                 child: Column(
                   children: [
                     const Spacer(),
-                    GestureDetector(
-                      onTap: () {
-                        Utils.showLog("Video User Id => ${controller.mainReels[widget.index].userId} => ${Database.loginUserId}");
-                        if (controller.mainReels[widget.index].userId != Database.loginUserId) {
-                          isReelsPage.value = false;
-                          SendGiftOnVideoBottomSheetUi.show(
-                            context: context,
-                            videoId: controller.mainReels[widget.index].id ?? "",
-                          );
-                        } else {
-                          Utils.showToast(EnumLocal.txtYouCantSendGiftOwnVideo.name.tr);
-                        }
-                      },
-                      child: SizedBox(
-                        width: 65,
-                        child: Lottie.asset(AppAsset.lottieGift),
-                      ),
-                    ),
+                    // GestureDetector(
+                     // onTap: () {
+                      //  Utils.showLog("Video User Id => ${controller.mainReels[widget.index].userId} => ${Database.loginUserId}");
+                       // if (controller.mainReels[widget.index].userId != Database.loginUserId) {
+                        //  isReelsPage.value = false;
+                        //  SendGiftOnVideoBottomSheetUi.show(
+                        //    context: context,
+                       //     videoId: controller.mainReels[widget.index].id ?? "",
+                       //   );
+                      //  } else {
+                      //    Utils.showToast(EnumLocal.txtYouCantSendGiftOwnVideo.name.tr);
+                     //   }
+                    //  },
+                   //   child: SizedBox(
+                   //     width: 65,
+                   //     child: Lottie.asset(AppAsset.lottieGift),
+                  //    ),
+                  //  ),
 
                     // *************************************
                     // NEW CART ICON ADDED HERE

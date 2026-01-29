@@ -1,14 +1,17 @@
 import 'dart:async';
 import 'dart:developer';
-
-import 'dart:io'; // For Platform check
-import 'package:flutter/foundation.dart'; // For kIsWeb
-import 'package:webview_flutter/webview_flutter.dart';
-import 'package:url_launcher/url_launcher.dart';
+import 'dart:io'; 
 
 import 'package:blurrycontainer/blurrycontainer.dart';
+import 'package:flutter/foundation.dart'; // For kIsWeb
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:webview_flutter/webview_flutter.dart';
+// ✅ REQUIRED FOR ANDROID FILE UPLOAD
+import 'package:webview_flutter_android/webview_flutter_android.dart'; 
+import 'package:file_picker/file_picker.dart'; 
+import 'package:url_launcher/url_launcher.dart';
+
 import 'package:auralive/custom/custom_fetch_user_coin.dart';
 import 'package:auralive/custom/custom_format_number.dart';
 import 'package:auralive/pages/bottom_bar_page/controller/bottom_bar_controller.dart';
@@ -21,9 +24,11 @@ import 'package:auralive/pages/profile_page/controller/profile_controller.dart';
 import 'package:auralive/pages/profile_page/widget/profile_widget.dart';
 import 'package:auralive/utils/asset.dart';
 import 'package:auralive/utils/color.dart';
+import 'package:auralive/size_extension.dart';
 import 'package:auralive/utils/database.dart';
 import 'package:auralive/utils/enums.dart';
 import 'package:auralive/utils/font_style.dart';
+import 'package:auralive/utils/utils.dart'; // Added for Utils.showLog
 
 class ProfileView extends GetView<ProfileController> {
   const ProfileView({super.key});
@@ -44,17 +49,14 @@ class ProfileView extends GetView<ProfileController> {
           shadowColor: AppColor.black.withOpacity(0.4),
           surfaceTintColor: AppColor.transparent,
           flexibleSpace: const Center(child: ProfileAppBarUi()),
-          // -----------------------------------------------------
-          // NEW: ADDED CART ICON HERE
-          // -----------------------------------------------------
           
           // -----------------------------------------------------
-          // ✅ MOVED CART ICON TO TOP LEFT (LEADING)
+          // ✅ CART ICON (TOP LEFT)
           // -----------------------------------------------------
           leading: GestureDetector(
             onTap: () => _onClickShop(context),
             child: Container(
-              margin: const EdgeInsets.all(8), // Adjusted margin for left side
+              margin: const EdgeInsets.all(8),
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
                 color: AppColor.primary.withOpacity(0.1),
@@ -62,7 +64,7 @@ class ProfileView extends GetView<ProfileController> {
               child: const Icon(
                 Icons.shopping_cart,
                 color: AppColor.black,
-                size: 20, // Slightly smaller to fit nicely in leading slot
+                size: 20,
               ),
             ),
           ),
@@ -86,7 +88,7 @@ class ProfileView extends GetView<ProfileController> {
                             ? ProfileShimmerUi()
                             : Container(
                                 color: AppColor.white,
-                                padding: EdgeInsets.symmetric(horizontal: 15),
+                                padding: const EdgeInsets.symmetric(horizontal: 15),
                                 child: Column(
                                   crossAxisAlignment: CrossAxisAlignment.center,
                                   mainAxisAlignment: MainAxisAlignment.start,
@@ -117,28 +119,28 @@ class ProfileView extends GetView<ProfileController> {
                                                     height: 100,
                                                     width: 100,
                                                     clipBehavior: Clip.antiAlias,
-                                                    decoration: BoxDecoration(shape: BoxShape.circle),
+                                                    decoration: const BoxDecoration(shape: BoxShape.circle),
                                                     child: Image.asset(AppAsset.icProfilePlaceHolder, fit: BoxFit.cover),
                                                   ),
                                                   Container(
                                                     height: 100,
                                                     width: 100,
                                                     clipBehavior: Clip.antiAlias,
-                                                    decoration: BoxDecoration(shape: BoxShape.circle),
+                                                    decoration: const BoxDecoration(shape: BoxShape.circle),
                                                     child: PreviewNetworkImageUi(image: controller.fetchProfileModel?.userProfileData?.user?.image),
                                                   ),
                                                   Visibility(
                                                     visible: controller.fetchProfileModel?.userProfileData?.user?.isProfileImageBanned ?? false,
                                                     child: Container(
                                                       clipBehavior: Clip.antiAlias,
-                                                      decoration: BoxDecoration(shape: BoxShape.circle),
+                                                      decoration: const BoxDecoration(shape: BoxShape.circle),
                                                       child: BlurryContainer(
                                                         height: 100,
                                                         width: 100,
                                                         blur: 3,
                                                         borderRadius: BorderRadius.circular(50),
                                                         color: AppColor.black.withOpacity(0.3),
-                                                        child: Offstage(),
+                                                        child: const Offstage(),
                                                       ),
                                                     ),
                                                   ),
@@ -329,95 +331,110 @@ class ProfileView extends GetView<ProfileController> {
                                         ],
                                       ),
                                     ),
-                                    5.height,
-                                    Container(
-                                      height: 102,
-                                      width: Get.width,
-                                      clipBehavior: Clip.antiAlias,
-                                      decoration: BoxDecoration(
-                                        gradient: AppColor.primaryLinearGradient,
-                                        borderRadius: BorderRadius.circular(20),
-                                      ),
-                                      child: Stack(
-                                        children: [
-                                          SizedBox(
-                                            height: 102,
-                                            width: Get.width,
-                                            child: Image.asset(
-                                              AppAsset.icWithdrawBg,
-                                              fit: BoxFit.cover,
-                                              opacity: AlwaysStoppedAnimation(0.6),
-                                            ),
-                                          ),
-                                          Padding(
-                                            padding: EdgeInsets.symmetric(horizontal: 25),
-                                            child: SizedBox(
+                                    
+                                    // -----------------------------------------------------------------
+                                    // ✅ WALLET CONTAINER (Hidden on iOS)
+                                    // -----------------------------------------------------------------
+                                    if (!Platform.isIOS) ...[
+                                      5.height,
+                                      Container(
+                                        height: 102,
+                                        width: Get.width,
+                                        clipBehavior: Clip.antiAlias,
+                                        decoration: BoxDecoration(
+                                          gradient: AppColor.primaryLinearGradient,
+                                          borderRadius: BorderRadius.circular(20),
+                                        ),
+                                        child: Stack(
+                                          children: [
+                                            SizedBox(
                                               height: 102,
                                               width: Get.width,
-                                              child: Row(
-                                                mainAxisAlignment: MainAxisAlignment.start,
-                                                children: [
-                                                  Column(
-                                                    crossAxisAlignment: CrossAxisAlignment.start,
-                                                    mainAxisAlignment: MainAxisAlignment.center,
-                                                    children: [
-                                                      Text(
-                                                        EnumLocal.txtAvailableCoin.name.tr,
-                                                        style: AppFontStyle.styleW600(AppColor.white, 18),
-                                                      ),
-                                                      5.height,
-                                                      Row(
-                                                        children: [
-                                                          Obx(
-                                                            () => Text(
-                                                              controller.coinOwnerCurrency.value == 0.0
-                                                                  ? 'USD ${CustomFormatNumber.convert(CustomFetchUserCoin.coin.value)}'
-                                                                  : "${controller.ownerCurrencyCode.value} ${CustomFormatNumber.convert(controller.coinOwnerCurrency.value.toInt())}",
-                                                              style: AppFontStyle.styleW700(AppColor.white, 35),
-                                                            ),
-                                                          ),
-                                                          15.width,
-                                                          GestureDetector(
-                                                            onTap: () => Get.toNamed(
-                                                              AppRoutes.myWalletPage,
-                                                              arguments: {
-                                                                'currencyCode': controller.ownerCurrencyCode.value,
-                                                              },
-                                                            ),
-                                                            child: Container(
-                                                              height: 32,
-                                                              padding: EdgeInsets.symmetric(horizontal: 15),
-                                                              decoration: BoxDecoration(
-                                                                color: AppColor.white,
-                                                                borderRadius: BorderRadius.circular(8),
-                                                              ),
-                                                              child: Row(
-                                                                mainAxisAlignment: MainAxisAlignment.center,
-                                                                children: [
-                                                                  Text(
-                                                                    EnumLocal.txtMyWallet.name.tr,
-                                                                    style: AppFontStyle.styleW700(AppColor.colorDarkOrange, 13),
-                                                                  ),
-                                                                  10.width,
-                                                                  Image.asset(
-                                                                    AppAsset.icDoubleArrowRightWithoutRadius,
-                                                                    width: 14,
-                                                                  ),
-                                                                ],
-                                                              ),
-                                                            ),
-                                                          ),
-                                                        ],
-                                                      ),
-                                                    ],
-                                                  ),
-                                                ],
+                                              child: Image.asset(
+                                                AppAsset.icWithdrawBg,
+                                                fit: BoxFit.cover,
+                                                opacity: const AlwaysStoppedAnimation(0.6),
                                               ),
                                             ),
-                                          ),
-                                        ],
+                                            Padding(
+                                              padding: const EdgeInsets.symmetric(horizontal: 25),
+                                              child: SizedBox(
+                                                height: 102,
+                                                width: Get.width,
+                                                child: Row(
+                                                  mainAxisAlignment: MainAxisAlignment.start,
+                                                  children: [
+                                                    Column(
+                                                      crossAxisAlignment: CrossAxisAlignment.start,
+                                                      mainAxisAlignment: MainAxisAlignment.center,
+                                                      children: [
+                                                        Text(
+                                                          EnumLocal.txtAvailableCoin.name.tr,
+                                                          style: AppFontStyle.styleW600(AppColor.white, 18),
+                                                        ),
+                                                        5.height,
+                                                        Row(
+                                                          children: [
+                                                            Obx(
+                                                              () {
+                                                                if (CustomFetchUserCoin.isLoading.value) {
+                                                                  return const SizedBox(
+                                                                    height: 20, 
+                                                                    width: 20, 
+                                                                    child: CircularProgressIndicator(strokeWidth: 2, color: AppColor.white)
+                                                                  );
+                                                                }
+                                                                return Text(
+                                                                  controller.coinOwnerCurrency.value == 0.0
+                                                                      ? 'USD ${CustomFormatNumber.convert(CustomFetchUserCoin.coin.value)}'
+                                                                      : "${controller.ownerCurrencyCode.value} ${CustomFormatNumber.convert(controller.coinOwnerCurrency.value.toInt())}",
+                                                                  style: AppFontStyle.styleW700(AppColor.white, 35),
+                                                                );
+                                                              }
+                                                            ),
+                                                            15.width,
+                                                            GestureDetector(
+                                                              onTap: () => Get.toNamed(
+                                                                AppRoutes.myWalletPage,
+                                                                arguments: {
+                                                                  'currencyCode': controller.ownerCurrencyCode.value,
+                                                                },
+                                                              ),
+                                                              child: Container(
+                                                                height: 32,
+                                                                padding: const EdgeInsets.symmetric(horizontal: 15),
+                                                                decoration: BoxDecoration(
+                                                                  color: AppColor.white,
+                                                                  borderRadius: BorderRadius.circular(8),
+                                                                ),
+                                                                child: Row(
+                                                                  mainAxisAlignment: MainAxisAlignment.center,
+                                                                  children: [
+                                                                    Text(
+                                                                      EnumLocal.txtMyWallet.name.tr,
+                                                                      style: AppFontStyle.styleW700(AppColor.colorDarkOrange, 13),
+                                                                    ),
+                                                                    10.width,
+                                                                    Image.asset(
+                                                                      AppAsset.icDoubleArrowRightWithoutRadius,
+                                                                      width: 14,
+                                                                    ),
+                                                                  ],
+                                                                ),
+                                                              ),
+                                                            ),
+                                                          ],
+                                                        ),
+                                                      ],
+                                                    ),
+                                                  ],
+                                                ),
+                                              ),
+                                            ),
+                                          ],
+                                        ),
                                       ),
-                                    ),
+                                    ],
                                   ],
                                 ),
                               ),
@@ -487,7 +504,7 @@ class ProfileView extends GetView<ProfileController> {
   }
 
   // --------------------------------------------------------
-  // NEW HELPER METHODS FOR SHOP CART
+  // ✅ HELPER METHODS FOR SHOP CART (WITH ANDROID FIX)
   // --------------------------------------------------------
 
   void _onClickShop(BuildContext context) {
@@ -512,12 +529,49 @@ class ProfileView extends GetView<ProfileController> {
         fullscreenDialog: true,
         builder: (_) {
           bool isLoading = true;
-          final webController = WebViewController()
+          
+          // 1. Initialize specifically for Android to access extra features
+          late final PlatformWebViewControllerCreationParams params;
+          if (WebViewPlatform.instance is AndroidWebViewPlatform) {
+            params = AndroidWebViewControllerCreationParams();
+          } else {
+            params = const PlatformWebViewControllerCreationParams();
+          }
+
+          final webController = WebViewController.fromPlatformCreationParams(params);
+
+          // 2. ENABLE FILE UPLOAD FOR ANDROID
+          if (webController.platform is AndroidWebViewController) {
+            AndroidWebViewController androidController = webController.platform as AndroidWebViewController;
+            androidController.setMediaPlaybackRequiresUserGesture(false);
+            
+            // This is the magic function that connects <input type="file"> to your phone
+            androidController.setOnShowFileSelector((FileSelectorParams params) async {
+              try {
+                final result = await FilePicker.platform.pickFiles(
+                  type: FileType.image, 
+                  allowMultiple: false, 
+                );
+
+                if (result != null && result.files.single.path != null) {
+                  // Return the selected file URI to the WebView
+                  return [Uri.file(result.files.single.path!).toString()];
+                }
+              } catch (e) {
+                // If Utils.showLog exists in your project
+                if (kDebugMode) print("File Picker Error: $e");
+              }
+              return []; // Return empty if cancelled
+            });
+          }
+
+          // 3. Common Setup
+          webController
             ..setJavaScriptMode(JavaScriptMode.unrestricted)
             ..setNavigationDelegate(
               NavigationDelegate(
                 onPageFinished: (_) {
-                  isLoading = false;
+                  // Handled by StatefulBuilder logic below for UI update
                 },
               ),
             )
@@ -525,6 +579,17 @@ class ProfileView extends GetView<ProfileController> {
 
           return StatefulBuilder(
             builder: (context, setState) {
+              // Listen to page load to hide spinner
+              webController.setNavigationDelegate(
+                NavigationDelegate(
+                  onPageFinished: (_) {
+                    if (context.mounted) {
+                      setState(() => isLoading = false);
+                    }
+                  },
+                ),
+              );
+
               return Scaffold(
                 appBar: AppBar(
                   backgroundColor: Colors.white,
@@ -558,4 +623,3 @@ class ProfileView extends GetView<ProfileController> {
     }
   }
 }
-
