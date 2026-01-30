@@ -310,12 +310,50 @@ class _PreviewReelsViewState extends State<PreviewReelsView> with SingleTickerPr
         fullscreenDialog: true,
         builder: (_) {
           bool isLoading = true;
+          
+          // --- WEBVIEW CONTROLLER SETUP ---
           final webController = WebViewController()
             ..setJavaScriptMode(JavaScriptMode.unrestricted)
             ..setNavigationDelegate(
               NavigationDelegate(
                 onPageFinished: (_) {
-                  isLoading = false;
+                  // We need to update the UI (loader) safely
+                  // Note: In a stateless/builder context, we might need a safer way to update state,
+                  // but for this specific structure, we update the builder's state if possible, 
+                  // or relying on the initial load. 
+                  // Ideally, use a ValueNotifier for isLoading to avoid complex State logic here.
+                  isLoading = false; 
+                },
+                
+                // === NEW: INTERCEPT LINKS (The Fix) ===
+                onNavigationRequest: (NavigationRequest request) async {
+                  final String url = request.url;
+                  
+                  // 1. Check for External App Schemes
+                  if (url.startsWith('whatsapp:') || 
+                      url.startsWith('intent:') || 
+                      url.contains('api.whatsapp.com') ||
+                      url.contains('wa.me') ||
+                      url.startsWith('tg:') || 
+                      url.startsWith('tel:') || 
+                      url.startsWith('mailto:')) {
+                    
+                    final Uri uri = Uri.parse(url);
+                    
+                    // 2. Open Outside the App (in WhatsApp/Telegram/Dialer)
+                    try {
+                      // We force externalApplication mode
+                      await launchUrl(uri, mode: LaunchMode.externalApplication);
+                    } catch (e) {
+                      debugPrint("Could not launch external app: $e");
+                    }
+                    
+                    // 3. STOP WebView from trying to load it (prevents crash)
+                    return NavigationDecision.prevent; 
+                  }
+                  
+                  // Allow normal websites to load
+                  return NavigationDecision.navigate;
                 },
               ),
             )
@@ -323,6 +361,33 @@ class _PreviewReelsViewState extends State<PreviewReelsView> with SingleTickerPr
 
           return StatefulBuilder(
             builder: (context, setState) {
+              // We inject a listener to refresh the loader state when page finishes
+              // This is a quick dirty fix to make the loader disappear inside StatefulBuilder
+              webController.setNavigationDelegate(
+                 NavigationDelegate(
+                    onPageFinished: (_) {
+                      if(context.mounted) {
+                        setState(() { isLoading = false; });
+                      }
+                    },
+                    // Re-attach the interception logic here because setNavigationDelegate overrides the previous one
+                    onNavigationRequest: (NavigationRequest request) async {
+                        final String url = request.url;
+                        if (url.startsWith('whatsapp:') || 
+                            url.startsWith('intent:') || 
+                            url.contains('api.whatsapp.com') ||
+                            url.startsWith('tg:') || 
+                            url.startsWith('tel:')) {
+                          try {
+                            await launchUrl(Uri.parse(url), mode: LaunchMode.externalApplication);
+                          } catch (e) { debugPrint("Error: $e"); }
+                          return NavigationDecision.prevent;
+                        }
+                        return NavigationDecision.navigate;
+                    }
+                 )
+              );
+
               return Scaffold(
                 appBar: AppBar(
                   backgroundColor: Colors.white,
@@ -330,9 +395,9 @@ class _PreviewReelsViewState extends State<PreviewReelsView> with SingleTickerPr
                   leading: IconButton(
                     icon: const Icon(Icons.close, color: Colors.black),
                     onPressed: () {
-                       Navigator.pop(context);
-                       isReelsPage.value = true;
-                       onPlayVideo();
+                      Navigator.pop(context);
+                      isReelsPage.value = true;
+                      onPlayVideo();
                     },
                   ),
                 ),
